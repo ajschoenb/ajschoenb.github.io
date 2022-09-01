@@ -21,6 +21,7 @@ function Map ({
     const [date, setDate] = useState(new Date());
     const [route, setRoute] = useState();
     const [positions, setPositions] = useState(findRouteSrcDst(date));
+    const [center, setCenter] = useState({ lat: 29.75, lng: -95.36 });
     
     const handleDateChange = () => {
         setDate(date);
@@ -33,7 +34,10 @@ function Map ({
     };
 
     const handleToday = () => {
-        date.setDate((new Date()).getDate()); 
+        const today = new Date();
+        date.setFullYear(today.getFullYear());
+        date.setMonth(today.getMonth());
+        date.setDate(today.getDate());
         handleDateChange();
     };
 
@@ -45,27 +49,47 @@ function Map ({
     useEffect(() => {
         if (ref.current && !map) {
             setMap(new window.google.maps.Map(ref.current, {
+                center: center,
+                zoom: 9,
                 disableDefaultUI: true,
                 zoomControl: true,
                 scaleControl: true,
                 rotateControl: true,
             }));
         }
-    }, [map, setMap]);
+    }, [center, map, setMap]);
 
     useEffect(() => {
-        const directionsService = new window.google.maps.DirectionsService();
+        if (map) {
+            map.panTo(center);
+            map.setZoom(9);
+            setMap(map);
+        }
+    }, [center, map, setCenter]);
 
+    useEffect(() => {
         if (!route) {
             const src = positions.src;
             const dst = positions.dst;
-            directionsService.route({ origin: src, destination: dst, travelMode: window.google.maps.TravelMode.DRIVING }, (res, status) => {
-                if (status === window.google.maps.DirectionsStatus.OK) {
-                    let display = new window.google.maps.DirectionsRenderer();
-                    display.setDirections(res);
-                    setRoute(display);
-                }
-            });
+            if (src === dst) {
+                const geocoder = new window.google.maps.Geocoder();
+                geocoder.geocode({ address: src }, (res, status) => {
+                    if (status === 'OK') {
+                        const position = res[0].geometry.location;
+                        setRoute(new window.google.maps.Marker({ position }));
+                        setCenter(position);
+                    }
+                });
+            } else {
+                const directionsService = new window.google.maps.DirectionsService();
+                directionsService.route({ origin: src, destination: dst, travelMode: window.google.maps.TravelMode.DRIVING }, (res, status) => {
+                    if (status === window.google.maps.DirectionsStatus.OK) {
+                        let display = new window.google.maps.DirectionsRenderer();
+                        display.setDirections(res);
+                        setRoute(display);
+                    }
+                });
+            }
         }
 
         return () => {
@@ -84,7 +108,7 @@ function Map ({
 
     return (
         <Stack>
-            <InputGroup size="lg" style={{ justifyContent: 'center', "z-index": "100"}}>
+            <InputGroup size="lg" style={{ justifyContent: 'center', "zIndex": "100"}}>
                 <InputGroup.Text>{"Date: " + date.toLocaleDateString()}</InputGroup.Text>
                 <Button variant="primary" onClick={handleDateDown}>Date - 1</Button>
                 <Button variant="primary" onClick={handleToday}>Today's Date</Button>
