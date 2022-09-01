@@ -2,7 +2,7 @@
   "name": "ajschoenb.github.io",
   "version": "0.1.0",
   "private": true,
-  "homepage": "ajschoenb.github.io",
+  "homepage": "https://ajschoenb.github.io",
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.3.0",
