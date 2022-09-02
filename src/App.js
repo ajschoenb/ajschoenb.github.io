@@ -2,7 +2,8 @@ import './App.css';
 import React, { useEffect, useRef, useState } from "react";
 import { Wrapper, Status } from "@googlemaps/react-wrapper";
 
-import Stack from "react-bootstrap/Stack";
+import Container from "react-bootstrap/Container";
+import Row from "react-bootstrap/Row";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
 
@@ -28,21 +29,14 @@ function Map ({
         setPositions(findRouteSrcDst(date));
     };
 
-    const handleDateDown = () => { 
-        date.setDate(date.getDate() - 1);
-        handleDateChange();
-    };
-
     const handleToday = () => {
         const today = new Date();
-        date.setFullYear(today.getFullYear());
-        date.setMonth(today.getMonth());
-        date.setDate(today.getDate());
+        date.setTime(today.getTime());
         handleDateChange();
     };
 
-    const handleDateUp = () => { 
-        date.setDate(date.getDate() + 1);
+    const handleDateDelta = (d) => { 
+        date.setDate(date.getDate() + d);
         handleDateChange();
     };
 
@@ -107,15 +101,21 @@ function Map ({
     }, [map, route, setRoute]);
 
     return (
-        <Stack>
-            <InputGroup size="lg" style={{ justifyContent: 'center', "zIndex": "100"}}>
-                <InputGroup.Text>{"Date: " + date.toLocaleDateString()}</InputGroup.Text>
-                <Button variant="primary" onClick={handleDateDown}>Date - 1</Button>
-                <Button variant="primary" onClick={handleToday}>Today's Date</Button>
-                <Button variant="primary" onClick={handleDateUp}>Date + 1</Button>
-            </InputGroup>
-            <div style={{ top: "-50px", width: "100%", height: "100vh" }} ref={ref} id="map" />
-        </Stack>
+        <Container fluid>
+            <Row>
+                <div style={{ top: "0", width: "100vw", height: "100vh" }} ref={ref} id="map" />
+            </Row>
+            <Row style={{ position: "relative", top: "-100vh" }}>
+                <InputGroup style={{ justifyContent: 'center', "zIndex": "100"}}>
+                    <InputGroup.Text className="border border-top-0 border-light">{date.toLocaleDateString()}</InputGroup.Text>
+                    <Button className="border border-top-0 border-light" variant="primary" onClick={handleDateDelta.bind(null, -7)}>-7</Button>
+                    <Button className="border border-top-0 border-light" variant="primary" onClick={handleDateDelta.bind(null, -1)}>-1</Button>
+                    <Button className="border border-top-0 border-light" variant="primary" onClick={handleToday}>Today</Button>
+                    <Button className="border border-top-0 border-light" variant="primary" onClick={handleDateDelta.bind(null, 1)}>+1</Button>
+                    <Button className="border border-top-0 border-light" variant="primary" onClick={handleDateDelta.bind(null, 7)}>+7</Button>
+                </InputGroup>
+            </Row>
+        </Container>
     );
     
 }

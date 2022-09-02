@@ -1,4 +1,4 @@
-let start = new Date("2022-9-2");
+let start = new Date("09/02/2022");
 
 let route = [
 { position: 'Houston, TX', length: 1 },
