@@ -5,7 +5,7 @@ let route = [
 { position: 'Little Rock, AR', length: 1 },
 { position: 'Memphis, TN', length: 1 },
 { position: 'Nashville, TN', length: 1 },
-{ position: 'Jackson, MS', length: 1 },
+{ position: 'Tupelo, MS', length: 1 },
 { position: 'New Orleans, LA', length: 1 },
 { position: 'Birmingham, AL', length: 1 },
 { position: 'Columbus, GA', length: 1 },
