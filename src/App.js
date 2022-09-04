@@ -23,6 +23,8 @@ function Map ({
     const [route, setRoute] = useState();
     const [positions, setPositions] = useState(findRouteSrcDst(date));
     const [center, setCenter] = useState({ lat: 29.75, lng: -95.36 });
+    const [zoom, setZoom] = useState(9);
+    const [duration, setDuration] = useState("0 hours 0 mins");
     
     const handleDateChange = () => {
         setDate(date);
@@ -43,26 +45,26 @@ function Map ({
     useEffect(() => {
         if (ref.current && !map) {
             setMap(new window.google.maps.Map(ref.current, {
-                center: center,
-                zoom: 9,
+                center,
+                zoom,
                 disableDefaultUI: true,
                 zoomControl: true,
                 scaleControl: true,
                 rotateControl: true,
             }));
         }
-    }, [center, map, setMap]);
+    }, [center, zoom, map, setMap]);
 
     useEffect(() => {
         if (map) {
             map.panTo(center);
-            map.setZoom(9);
+            map.setZoom(zoom);
             setMap(map);
         }
-    }, [center, map, setCenter]);
+    }, [center, zoom, map, setCenter, setZoom]);
 
     useEffect(() => {
-        if (!route) {
+        if (!route && map) {
             const src = positions.src;
             const dst = positions.dst;
             if (src === dst) {
@@ -72,15 +74,19 @@ function Map ({
                         const position = res[0].geometry.location;
                         setRoute(new window.google.maps.Marker({ position }));
                         setCenter(position);
+                        setZoom(9);
+                        setDuration("0 hours 0 mins");
                     }
                 });
             } else {
                 const directionsService = new window.google.maps.DirectionsService();
                 directionsService.route({ origin: src, destination: dst, travelMode: window.google.maps.TravelMode.DRIVING }, (res, status) => {
                     if (status === window.google.maps.DirectionsStatus.OK) {
-                        let display = new window.google.maps.DirectionsRenderer();
+                        let display = new window.google.maps.DirectionsRenderer({ preserveViewport: true });
                         display.setDirections(res);
                         setRoute(display);
+                        setDuration(res.routes[0].legs[0].duration.text);
+                        map.fitBounds(res.routes[0].bounds, 100);
                     }
                 });
             }
@@ -92,7 +98,7 @@ function Map ({
                 setRoute(null);
             }
         };
-    }, [positions, setPositions, route, setRoute]);
+    }, [positions, setPositions, route, setRoute, map]);
 
     useEffect(() => {
         if (route) {
@@ -103,7 +109,7 @@ function Map ({
     return (
         <Container fluid>
             <Row>
-                <div style={{ top: "0", width: "100vw", height: "100vh" }} ref={ref} id="map" />
+                <div style={{ width: "100vw", height: "100vh" }} ref={ref} id="map" />
             </Row>
             <Row style={{ position: "relative", top: "-100vh" }}>
                 <InputGroup style={{ justifyContent: 'center', "zIndex": "100"}}>
@@ -113,6 +119,11 @@ function Map ({
                     <Button className="border border-top-0 border-light" variant="primary" onClick={handleToday}>Today</Button>
                     <Button className="border border-top-0 border-light" variant="primary" onClick={handleDateDelta.bind(null, 1)}>+1</Button>
                     <Button className="border border-top-0 border-light" variant="primary" onClick={handleDateDelta.bind(null, 7)}>+7</Button>
+                </InputGroup>
+            </Row>
+            <Row style={{ position: "relative", top: "-100vh", "zIndex": "100" }}>
+                <InputGroup style={{ justifyContent: 'center' }}>
+                    <InputGroup.Text className="border border-top-0 border-light">{duration}</InputGroup.Text>
                 </InputGroup>
             </Row>
         </Container>
